@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - ActionCam
+  - Store
+  - Customer
   layers:
   - Default
   - TransparentFX

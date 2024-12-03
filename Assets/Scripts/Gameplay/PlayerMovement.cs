@@ -5,8 +5,8 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-
 //todo: make movement with wheel collider at some point.
+//todo: initialize tweens then call tweens in a seperate functions. add a boolean to check if it has run before
 
 public class PlayerMovement : MonoBehaviour {
 
@@ -18,7 +18,10 @@ public class PlayerMovement : MonoBehaviour {
     [SerializeField] private float _backwardSpeed = 5f;
     [SerializeField] private float _brakeStrength = 10f;
 
-    [SerializeField] private float _skewAngle = 15f;
+    [SerializeField] private float _tiltAngle = 15f;
+    [SerializeField] private float _tiltTime = .25f;
+    [SerializeField] private float _wheelieAngle = -55f;
+    [SerializeField] private float _wheelieTime = .25f;
 
     private bool _isAvailable;
 
@@ -27,13 +30,26 @@ public class PlayerMovement : MonoBehaviour {
     private bool _isSpeeding;
     private bool _isBacking;
 
+    private bool _isTiltStarted;
+    private bool _isOnTilt;
+    
+    private bool _isWheelieStarted;
+    private bool _isOnWheelie;
+
+    
+    
     private float _turnSpeed = 0;
 
     private Transform _colliderTransform;
     private Transform _modelTransform;
-    private Vector3 _defRotation;
-    private Vector3 _defPosition;
-    private Vector3 _defScale;
+
+    private Tweener _tiltModel;
+    private Tweener _tiltCollider;
+
+    private Tweener _wheelieModel;
+    private Tweener _wheelieCollider;
+
+    private Tweener _jumpTween;
     
     private void Awake() {
 
@@ -46,13 +62,88 @@ public class PlayerMovement : MonoBehaviour {
     private void StartMovement() {
 
         _isAvailable = true;
-
+        
         
         StartCoroutine(InputCheck());
         StartCoroutine(MovementCheck());
+        
     }
 
+    private void Start() {
+        
+        SetupTweens();
+    }
 
+    #region Tweens
+    
+    private void SetupTweens() {
+
+        _wheelieModel = _modelTransform.DOLocalRotate(Vector3.one, _wheelieTime).SetAutoKill(false).OnStart(() => _isWheelieStarted = true ).OnComplete(() => _isWheelieStarted = false);
+        _wheelieModel.Pause();
+        _wheelieCollider = _colliderTransform.DOLocalRotate(Vector3.one, _wheelieTime).SetAutoKill(false).OnStart(() => _isWheelieStarted = true ).OnComplete(() => _isWheelieStarted = false);
+        _wheelieCollider.Pause();
+
+        _tiltModel = _modelTransform.DOLocalRotate(Vector3.one, _tiltTime).SetAutoKill(false).OnStart(() => _isTiltStarted = true ).OnComplete(() => _isTiltStarted = false);
+        _tiltModel.Pause();
+        _tiltCollider = _colliderTransform.DOLocalRotate(Vector3.one, _tiltTime).SetAutoKill(false).OnStart(() => _isTiltStarted = true ).OnComplete(() => _isTiltStarted = false);
+        _tiltCollider.Pause();
+    }
+
+    private void TiltTween(Vector3 modelRot, Vector3 coliderRot, bool isTilting) {
+
+        _isOnTilt = isTilting;
+        
+        _tiltModel.ChangeEndValue(modelRot, true);
+        _tiltModel.Restart();
+        _tiltCollider.ChangeEndValue(coliderRot, true);
+        _tiltCollider.Restart();
+    }
+    
+    private void TiltTween(float endValue, Quaternion modelRotation, Quaternion colliderRotation, bool isTilting) {
+
+        _isOnTilt = isTilting;
+
+        var m_TiltRot = new Vector3(modelRotation.x, modelRotation.y, endValue);
+        var c_TiltRot = new Vector3(colliderRotation.x, colliderRotation.y, endValue);
+        
+        _tiltModel.ChangeEndValue(m_TiltRot, true);
+        _tiltModel.Restart();
+        _tiltCollider.ChangeEndValue(c_TiltRot, true);
+        _tiltCollider.Restart();
+    }
+    private void WheelieTween(float endValue, Quaternion modelRotation, Quaternion colliderRotation, bool isWheelieing) {
+
+        _isOnWheelie = isWheelieing;
+        
+        var m_WheelieRot = new Vector3(endValue, modelRotation.y, modelRotation.z);
+        var c_WheelieRot = new Vector3(endValue, colliderRotation.y, colliderRotation.z);
+        
+        _wheelieModel.ChangeEndValue(m_WheelieRot, true);
+        _wheelieModel.Restart();
+        _wheelieCollider.ChangeEndValue(c_WheelieRot, true);
+        _wheelieCollider.Restart();
+    }
+
+    private void JumpTween() {
+        
+        if(_jumpTween.IsPlaying()) { return; }
+        
+        _jumpTween = _modelTransform.DOScale(new Vector3(1.25f,.75f,1f), .15f).OnComplete(() => {
+
+            _modelTransform.DOScale(new Vector3(.75f, 1.25f, 1f), .25f);
+            transform.DOMoveY(10f, .25f).OnComplete(() => {
+                        
+                transform.DOMoveY(0, .25f);
+                _modelTransform.DOScale(Vector3.one, .25f)
+                    .OnComplete(() => _modelTransform.DOScale(new Vector3(1.25f,.75f,1f), .15f)
+                        .OnComplete(() => _modelTransform.DOScale(Vector3.one, .15f)));
+                        
+            });
+        });
+    }
+    
+
+    #endregion
     private IEnumerator MovementCheck() {
 
         while(_isAvailable) {
@@ -111,51 +202,51 @@ public class PlayerMovement : MonoBehaviour {
 
 
             if(Input.GetKey(KeyCode.LeftShift) && _isSpeeding) {
+
                 
-                _modelTransform.DOLocalRotate(new Vector3(-55f, modelRotation.y, modelRotation.z), .25f);
-                _colliderTransform.DOLocalRotate(new Vector3(-55f, colliderRotation.y, colliderRotation.z), .25f);
+                WheelieTween(-_wheelieAngle, modelRotation, colliderRotation, true);
+                // _modelTransform.DOLocalRotate(new Vector3(-55f, modelRotation.y, modelRotation.z), .25f);
+                // _colliderTransform.DOLocalRotate(new Vector3(-55f, colliderRotation.y, colliderRotation.z), .25f);
 
                 _forwardSpeed = _multipliedForwardSpeed;
                 _turnSpeed = 300f;
             }
+            else if(Input.GetKeyUp(KeyCode.LeftShift)) {
 
-            if(Input.GetKeyUp(KeyCode.LeftShift)) {
-                
-                _modelTransform.DOLocalRotate(new Vector3(0, modelRotation.y, modelRotation.z), .25f);
-                _colliderTransform.DOLocalRotate(new Vector3(0, colliderRotation.y, colliderRotation.z), .25f);
+                WheelieTween(-0, modelRotation, colliderRotation, false);
+                // _modelTransform.DOLocalRotate(new Vector3(0, modelRotation.y, modelRotation.z), .25f);
+                // _colliderTransform.DOLocalRotate(new Vector3(0, colliderRotation.y, colliderRotation.z), .25f);
                 
                 _forwardSpeed = 20f;
+                _turnSpeed = 200f;
             }
+            
 
             if(Input.GetKeyDown(KeyCode.Space)) {
                 
+                JumpTween();
+                
+            }
+            
+            if(Input.GetKeyUp(KeyCode.Space)) {
+                
 
-                _modelTransform.DOScale(new Vector3(1.25f,.75f,1f), .15f).OnComplete(() => {
-
-                    _modelTransform.DOScale(new Vector3(.75f, 1.25f, 1f), .25f);
-                    transform.DOMoveY(10f, .25f).OnComplete(() => {
-                        
-                        transform.DOMoveY(0, .25f);
-                        _modelTransform.DOScale(Vector3.one, .25f)
-                            .OnComplete(() => _modelTransform.DOScale(new Vector3(1.25f,.75f,1f), .15f)
-                                .OnComplete(() => _modelTransform.DOScale(Vector3.one, .15f)));
-                        
-                    });
-                });
                 
             }
             
             if(steer > 0 && (_isSpeeding || _isBacking)) {
                 
                 if(_isSpeeding) {
-                    
-                    _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, -_skewAngle), .25f);
-                    _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, -_skewAngle), .25f);
+
+                    TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
+                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, -_tiltAngle), .25f);
+                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, -_tiltAngle), .25f);
                 }
                 else if(_isBacking) {
-                    
-                    _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, _skewAngle), .25f);
-                    _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, _skewAngle), .25f);
+
+                    TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
+                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, _tiltAngle), .25f);
+                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, _tiltAngle), .25f);
                 }
                 
                 angles.y += steer * _turnSpeed * Time.deltaTime;
@@ -166,13 +257,15 @@ public class PlayerMovement : MonoBehaviour {
 
                 if(_isSpeeding) {
                     
-                    _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, _skewAngle), .25f);
-                    _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, _skewAngle), .25f);
+                    TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
+                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, _tiltAngle), .25f);
+                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, _tiltAngle), .25f);
                 }
                 else if(_isBacking) {
                     
-                    _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, -_skewAngle), .25f);
-                    _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, -_skewAngle), .25f);
+                    TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
+                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, -_tiltAngle), .25f);
+                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, -_tiltAngle), .25f);
                 }
                 
                 
@@ -185,12 +278,14 @@ public class PlayerMovement : MonoBehaviour {
                 rotation.eulerAngles = new Vector3(0, transform.rotation.eulerAngles.y, 0);
                 transform.rotation = rotation;
         
-                _modelTransform.DOLocalRotate(new Vector3(0, 0, 0), .15f);
-                _colliderTransform.DOLocalRotate(new Vector3(0, 0, 0), .15f);
+                var tweenInput = Vector3.zero;
+                TiltTween(tweenInput, tweenInput, false);
+                // _modelTransform.DOLocalRotate(new Vector3(0, 0, 0), .15f);
+                // _colliderTransform.DOLocalRotate(new Vector3(0, 0, 0), .15f);
             }
             
             yield return null;
-        }
+        } 
     }
 
 }
