@@ -17,9 +17,6 @@ public class DropoffPoint : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-
-        
-        Debug.Log($"something entered trigger: {other.name}, {other.tag}");
         
         if(other.CompareTag("Player")) {
             

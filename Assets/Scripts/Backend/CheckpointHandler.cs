@@ -52,7 +52,7 @@ public class CheckpointHandler : MonoBehaviour {
 
         var pickupTarget = stores[Random.Range(0, stores.Count)];
 
-        PickupPoint.transform.position = pickupTarget.position;
+        PickupPoint.transform.position = new Vector3(pickupTarget.position.x, PickupPoint.transform.position.y, pickupTarget.position.z);
         PickupPoint.transform.rotation = pickupTarget.rotation;
         PickupPoint.SetActive(true);
         
@@ -64,7 +64,7 @@ public class CheckpointHandler : MonoBehaviour {
         PickupPoint.SetActive(false);
 
         var dropoffTarget = customers[Random.Range(0, customers.Count)];
-        DropoffPoint.transform.position = dropoffTarget.position;
+        DropoffPoint.transform.position = new Vector3(dropoffTarget.position.x, DropoffPoint.transform.position.y, dropoffTarget.position.z);
         DropoffPoint.transform.rotation = dropoffTarget.rotation;
         DropoffPoint.SetActive(true);
         
@@ -78,7 +78,7 @@ public class CheckpointHandler : MonoBehaviour {
         
         var pickupTarget = stores[Random.Range(0, stores.Count)];
 
-        PickupPoint.transform.position = pickupTarget.position;
+        PickupPoint.transform.position = new Vector3(pickupTarget.position.x, PickupPoint.transform.position.y, pickupTarget.position.z);
         PickupPoint.transform.rotation = pickupTarget.rotation;
         PickupPoint.SetActive(true);
         

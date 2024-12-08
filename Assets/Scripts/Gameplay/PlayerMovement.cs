@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour {
     public Transform playerModel;
 
     [SerializeField] private float _forwardSpeed = 20f;
+    [SerializeField] private float _forwardSpeedFalloff = 5f;
     [SerializeField] private float _multipliedForwardSpeed = 35f;
     [SerializeField] private float _backwardSpeed = 5f;
     [SerializeField] private float _brakeStrength = 10f;
@@ -23,6 +24,8 @@ public class PlayerMovement : MonoBehaviour {
     [SerializeField] private float _wheelieAngle = -55f;
     [SerializeField] private float _wheelieTime = .25f;
 
+    private float _currentSpeed;
+    
     private bool _isAvailable;
 
     private bool _isGrounded;
@@ -62,10 +65,11 @@ public class PlayerMovement : MonoBehaviour {
     private void StartMovement() {
 
         _isAvailable = true;
-        
+
+        _backwardSpeed *= -1;
         
         StartCoroutine(InputCheck());
-        StartCoroutine(MovementCheck());
+        // StartCoroutine(MovementCheck());
         
     }
 
@@ -112,7 +116,7 @@ public class PlayerMovement : MonoBehaviour {
         _tiltCollider.Restart();
     }
     private void WheelieTween(float endValue, Quaternion modelRotation, Quaternion colliderRotation, bool isWheelieing) {
-
+        
         _isOnWheelie = isWheelieing;
         
         var m_WheelieRot = new Vector3(endValue, modelRotation.y, modelRotation.z);
@@ -122,47 +126,62 @@ public class PlayerMovement : MonoBehaviour {
         _wheelieModel.Restart();
         _wheelieCollider.ChangeEndValue(c_WheelieRot, true);
         _wheelieCollider.Restart();
+        
+        Debug.Log($"is wheelieing? {_wheelieModel.IsPlaying()} <> {_isOnWheelie}");
     }
 
     private void JumpTween() {
-        
-        if(_jumpTween.IsPlaying()) { return; }
-        
-        _jumpTween = _modelTransform.DOScale(new Vector3(1.25f,.75f,1f), .15f).OnComplete(() => {
+
+        _jumpTween = _modelTransform.DOScale(new Vector3(1.25f, .75f, 1f), .15f).OnComplete(() => {
 
             _modelTransform.DOScale(new Vector3(.75f, 1.25f, 1f), .25f);
             transform.DOMoveY(10f, .25f).OnComplete(() => {
-                        
+
                 transform.DOMoveY(0, .25f);
                 _modelTransform.DOScale(Vector3.one, .25f)
-                    .OnComplete(() => _modelTransform.DOScale(new Vector3(1.25f,.75f,1f), .15f)
+                    .OnComplete(() => _modelTransform.DOScale(new Vector3(1.25f, .75f, 1f), .15f)
                         .OnComplete(() => _modelTransform.DOScale(Vector3.one, .15f)));
-                        
+
             });
         });
     }
     
 
     #endregion
+
+    private void FixedUpdate() {
+        
+        if(Physics.Raycast(transform.position, -transform.up, .75f)) {
+
+            _isGrounded = true;
+            
+            return;
+        }
+
+        _isGrounded = false;
+    }
+
+    /*
     private IEnumerator MovementCheck() {
 
         while(_isAvailable) {
-
-            // Debug.DrawRay(transform.position, -transform.up * .75f, Color.red);
             
             if(Physics.Raycast(transform.position, -transform.up, .75f)) {
+                
+                // Debug.DrawRay(transform.position, -transform.up * .75f, Color.red);
 
                 _isGrounded = true;
                 
-                yield return null;
+                yield return new WaitForFixedUpdate();
             }
 
             _isGrounded = false;
             
             
-            yield return null;
+            yield return new WaitForFixedUpdate();
         }
     }
+    */
 
     private IEnumerator InputCheck() {
 
@@ -172,22 +191,71 @@ public class PlayerMovement : MonoBehaviour {
 
             var verticalInput = Input.GetAxis("Vertical");
             var steer = Input.GetAxis("Horizontal");
+
+            switch(_currentSpeed) {
+                
+                case > 0: {
+
+                    _isSpeeding = true;
+                    break;
+                }
+                case < 0: {
+
+                    _isBacking = true;
+                    break;
+                }
+                default: {
+
+                    _isSpeeding = false;
+                    _isBacking = false;
+                    break;
+                }
+                
+            }
             
-            if(verticalInput > 0) {
-
-                _isSpeeding = true;
-                transform.position += transform.forward * (verticalInput * _forwardSpeed * Time.deltaTime);
+            switch(verticalInput) {
                 
-            }
-            else if(verticalInput < 0) {
-
-                _isBacking = true;
-                transform.position -= transform.forward * (_backwardSpeed * Time.deltaTime);
-            }
-            else {
                 
-                _isSpeeding = false;
-                _isBacking = false;
+                case > 0: {
+                    
+                    _currentSpeed = _forwardSpeed;
+                    transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
+                    
+                    break;
+                }
+                case < 0: {
+                    
+                    if(_currentSpeed > 0) {
+                    
+                        _currentSpeed -=  _brakeStrength * Time.deltaTime;
+                        transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
+
+                        yield return null;
+                    }
+
+                    _currentSpeed = _backwardSpeed;
+                    transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
+                    
+                    break;
+                }
+                
+                default: {
+                    
+                    if(_currentSpeed > 0) {
+                    
+                        _currentSpeed -=  _forwardSpeedFalloff * Time.deltaTime;
+                        
+                        Debug.Log($"slowing? {_currentSpeed}");
+                        
+                        transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
+
+                        yield return null;
+                    }
+
+                    _currentSpeed = 0;
+                    
+                    break;
+                }
             }
             
             var angles = transform.rotation.eulerAngles;
@@ -203,14 +271,27 @@ public class PlayerMovement : MonoBehaviour {
 
             if(Input.GetKey(KeyCode.LeftShift) && _isSpeeding) {
 
-                
-                WheelieTween(-_wheelieAngle, modelRotation, colliderRotation, true);
-                // _modelTransform.DOLocalRotate(new Vector3(-55f, modelRotation.y, modelRotation.z), .25f);
-                // _colliderTransform.DOLocalRotate(new Vector3(-55f, colliderRotation.y, colliderRotation.z), .25f);
+                if(!_isWheelieStarted) {
+                    
+                    WheelieTween(_wheelieAngle, modelRotation, colliderRotation, true);
+                }
 
                 _forwardSpeed = _multipliedForwardSpeed;
                 _turnSpeed = 300f;
             }
+            else if(Input.GetKeyUp(KeyCode.LeftShift)){
+
+                if(!_isWheelieStarted) {
+
+                    WheelieTween(0, modelRotation, colliderRotation, false);
+                }
+
+                _forwardSpeed = 20f;
+                _turnSpeed = 200f;
+            }
+            
+            
+            /*
             else if(Input.GetKeyUp(KeyCode.LeftShift)) {
 
                 WheelieTween(-0, modelRotation, colliderRotation, false);
@@ -220,33 +301,29 @@ public class PlayerMovement : MonoBehaviour {
                 _forwardSpeed = 20f;
                 _turnSpeed = 200f;
             }
+            */
             
 
             if(Input.GetKeyDown(KeyCode.Space)) {
                 
+                if(!_isGrounded) { yield return null; }
                 JumpTween();
-                
             }
             
             if(Input.GetKeyUp(KeyCode.Space)) {
                 
-
                 
             }
             
             if(steer > 0 && (_isSpeeding || _isBacking)) {
                 
-                if(_isSpeeding) {
+                if(_isSpeeding && !_isTiltStarted) {
 
                     TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
-                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, -_tiltAngle), .25f);
-                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, -_tiltAngle), .25f);
                 }
-                else if(_isBacking) {
+                else if(_isBacking && !_isTiltStarted) {
 
                     TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
-                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, _tiltAngle), .25f);
-                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, _tiltAngle), .25f);
                 }
                 
                 angles.y += steer * _turnSpeed * Time.deltaTime;
@@ -255,17 +332,13 @@ public class PlayerMovement : MonoBehaviour {
             }
             else if(steer < 0 && (_isSpeeding || _isBacking)) {
 
-                if(_isSpeeding) {
+                if(_isSpeeding && !_isTiltStarted) {
                     
                     TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
-                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, _tiltAngle), .25f);
-                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, _tiltAngle), .25f);
                 }
-                else if(_isBacking) {
+                else if(_isBacking && !_isTiltStarted) {
                     
                     TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
-                    // _modelTransform.DOLocalRotate(new Vector3(modelRotation.x, modelRotation.y, -_tiltAngle), .25f);
-                    // _colliderTransform.DOLocalRotate(new Vector3(colliderRotation.x, colliderRotation.y, -_tiltAngle), .25f);
                 }
                 
                 
@@ -280,8 +353,6 @@ public class PlayerMovement : MonoBehaviour {
         
                 var tweenInput = Vector3.zero;
                 TiltTween(tweenInput, tweenInput, false);
-                // _modelTransform.DOLocalRotate(new Vector3(0, 0, 0), .15f);
-                // _colliderTransform.DOLocalRotate(new Vector3(0, 0, 0), .15f);
             }
             
             yield return null;

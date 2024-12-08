@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7462211582585801602}
   - component: {fileID: 6573861521149506576}
   - component: {fileID: 6766321522205086902}
+  - component: {fileID: 6298590138411439105}
   m_Layer: 0
   m_Name: Point
   m_TagString: Untagged
@@ -105,6 +106,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6298590138411439105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 231842866575212911}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c07fd7ec50cd3884c9a14980efe5bdc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5508998754962403911
 GameObject:
   m_ObjectHideFlags: 0
@@ -114,7 +127,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8929116213185799161}
-  - component: {fileID: 9085776822486787118}
   m_Layer: 0
   m_Name: Dropoff
   m_TagString: Untagged
@@ -132,21 +144,9 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 6.39}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 6.606775, y: 6.606775, z: 6.606775}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2194347663310723174}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9085776822486787118
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5508998754962403911}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0faf8ed387e0bd42913b3d3c3d14fe0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

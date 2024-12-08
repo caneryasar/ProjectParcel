@@ -16,8 +16,6 @@ public class PickupPoint : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         
-        Debug.Log($"something entered trigger: {other.name}, {other.tag}");
-        
         if(other.CompareTag("Player")) {
             
             _eventArchive.InvokeOnDeliveryPickup();
