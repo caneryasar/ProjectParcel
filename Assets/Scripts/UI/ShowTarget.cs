@@ -6,7 +6,7 @@ public class ShowTarget : MonoBehaviour {
 
     private EventArchive _eventArchive;
     
-    // Start is called before the first frame update
+    
     void Start() {
 
         _eventArchive = FindObjectOfType<EventArchive>();
@@ -18,21 +18,19 @@ public class ShowTarget : MonoBehaviour {
         
         StopAllCoroutines();
 
-        StartCoroutine(LookAtTarget(target));
+        var lookAt = new Vector3(target.position.x, transform.position.y, target.position.z);
+        
+        StartCoroutine(LookAtTarget(lookAt));
     }
 
-    private IEnumerator LookAtTarget(Transform targetTransform) {
+    private IEnumerator LookAtTarget(Vector3 targetTransform) {
 
         while(true) {
 
-            transform.LookAt(targetTransform.position);
+            transform.LookAt(targetTransform);
             
             yield return null;
         }
         
-    }
-    
-    // Update is called once per frame
-    void Update() {
     }
 }

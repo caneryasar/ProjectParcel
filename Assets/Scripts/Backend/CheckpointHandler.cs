@@ -29,12 +29,12 @@ public class CheckpointHandler : MonoBehaviour {
         
         foreach(var storeObject in storeObjects) {
             
-            stores.Add(storeObject.transform);
+            stores.Add(storeObject.transform.GetChild(0));
         }
         
         foreach(var customerObject in customerObjects) {
             
-            customers.Add(customerObject.transform);
+            customers.Add(customerObject.transform.GetChild(0));
         }
     }
 

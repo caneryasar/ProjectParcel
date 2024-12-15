@@ -68,7 +68,7 @@ public class PlayerMovement : MonoBehaviour {
 
         _backwardSpeed *= -1;
         
-        StartCoroutine(InputCheck());
+        // StartCoroutine(InputCheck());
         // StartCoroutine(MovementCheck());
         
     }
@@ -182,181 +182,149 @@ public class PlayerMovement : MonoBehaviour {
         }
     }
     */
-
-    private IEnumerator InputCheck() {
-
-        while(_isAvailable) {
-
-            if(!_isGrounded) { yield return null; }
-
-            var verticalInput = Input.GetAxis("Vertical");
-            var steer = Input.GetAxis("Horizontal");
-
-            switch(_currentSpeed) {
-                
-                case > 0: {
-
-                    _isSpeeding = true;
-                    break;
-                }
-                case < 0: {
-
-                    _isBacking = true;
-                    break;
-                }
-                default: {
-
-                    _isSpeeding = false;
-                    _isBacking = false;
-                    break;
-                }
-                
-            }
-            
-            switch(verticalInput) {
-                
-                
-                case > 0: {
-                    
-                    _currentSpeed = _forwardSpeed;
-                    transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
-                    
-                    break;
-                }
-                case < 0: {
-                    
-                    if(_currentSpeed > 0) {
-                    
-                        _currentSpeed -=  _brakeStrength * Time.deltaTime;
-                        transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
-
-                        yield return null;
-                    }
-
-                    _currentSpeed = _backwardSpeed;
-                    transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
-                    
-                    break;
-                }
-                
-                default: {
-                    
-                    if(_currentSpeed > 0) {
-                    
-                        _currentSpeed -=  _forwardSpeedFalloff * Time.deltaTime;
-                        
-                        Debug.Log($"slowing? {_currentSpeed}");
-                        
-                        transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
-
-                        yield return null;
-                    }
-
-                    _currentSpeed = 0;
-                    
-                    break;
-                }
-            }
-            
-            var angles = transform.rotation.eulerAngles;
-            var rotation = transform.rotation;
-
-            var colliderRotation = _colliderTransform.localRotation;
-            var modelRotation = _modelTransform.localRotation;
-            
-            if(_isSpeeding) { _turnSpeed = 200; }
-            else if(_isBacking) { _turnSpeed = 50; }
-            else { _turnSpeed = 0; }
-
-
-            if(Input.GetKey(KeyCode.LeftShift) && _isSpeeding) {
-
-                if(!_isWheelieStarted) {
-                    
-                    WheelieTween(_wheelieAngle, modelRotation, colliderRotation, true);
-                }
-
-                _forwardSpeed = _multipliedForwardSpeed;
-                _turnSpeed = 300f;
-            }
-            else if(Input.GetKeyUp(KeyCode.LeftShift)){
-
-                if(!_isWheelieStarted) {
-
-                    WheelieTween(0, modelRotation, colliderRotation, false);
-                }
-
-                _forwardSpeed = 20f;
-                _turnSpeed = 200f;
-            }
-            
-            
-            /*
-            else if(Input.GetKeyUp(KeyCode.LeftShift)) {
-
-                WheelieTween(-0, modelRotation, colliderRotation, false);
-                // _modelTransform.DOLocalRotate(new Vector3(0, modelRotation.y, modelRotation.z), .25f);
-                // _colliderTransform.DOLocalRotate(new Vector3(0, colliderRotation.y, colliderRotation.z), .25f);
-                
-                _forwardSpeed = 20f;
-                _turnSpeed = 200f;
-            }
-            */
-            
-
-            if(Input.GetKeyDown(KeyCode.Space)) {
-                
-                if(!_isGrounded) { yield return null; }
-                JumpTween();
-            }
-            
-            if(Input.GetKeyUp(KeyCode.Space)) {
-                
-                
-            }
-            
-            if(steer > 0 && (_isSpeeding || _isBacking)) {
-                
-                if(_isSpeeding && !_isTiltStarted) {
-
-                    TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
-                }
-                else if(_isBacking && !_isTiltStarted) {
-
-                    TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
-                }
-                
-                angles.y += steer * _turnSpeed * Time.deltaTime;
-                rotation.eulerAngles = angles;
-                transform.rotation = rotation;
-            }
-            else if(steer < 0 && (_isSpeeding || _isBacking)) {
-
-                if(_isSpeeding && !_isTiltStarted) {
-                    
-                    TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
-                }
-                else if(_isBacking && !_isTiltStarted) {
-                    
-                    TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
-                }
-                
-                
-                angles.y += steer * _turnSpeed * Time.deltaTime;
-                rotation.eulerAngles = angles;
-                transform.rotation = rotation;
-            }
-            else {
-                
-                rotation.eulerAngles = new Vector3(0, transform.rotation.eulerAngles.y, 0);
-                transform.rotation = rotation;
+    private void Update() {
         
-                var tweenInput = Vector3.zero;
-                TiltTween(tweenInput, tweenInput, false);
+        if(!_isAvailable) { return; }
+
+        if(!_isGrounded) { return; }
+
+        var verticalInput = Input.GetAxis("Vertical");
+        var steer = Input.GetAxis("Horizontal");
+
+        switch(_currentSpeed) {
+            
+            case > 0: {
+                
+                _isSpeeding = true;
+                break;
             }
             
-            yield return null;
-        } 
-    }
+            case < 0: {
+                
+                _isBacking = true;
+                break;
+            }
+            
+            default: {
+                
+                _isSpeeding = false;
+                _isBacking = false;
+                break;
+            }
+        }
 
+        switch(verticalInput) {
+            
+            case > 0: {
+                
+                _currentSpeed = _forwardSpeed;
+                transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
+                break;
+            }
+            case < 0: {
+                
+                if(_currentSpeed > 0) {
+                    
+                    _currentSpeed -= _brakeStrength * Time.deltaTime;
+                    transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
+                    break;
+                }
+
+                _currentSpeed = _backwardSpeed;
+                transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
+                break;
+            }
+
+            default: {
+                
+                if(_currentSpeed > 0) {
+                    
+                    _currentSpeed -= _forwardSpeedFalloff * Time.deltaTime;
+                    Debug.Log($"slowing? {_currentSpeed}");
+                    transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
+                    break;
+                }
+
+                _currentSpeed = 0;
+                break;
+            }
+        }
+
+        var angles = transform.rotation.eulerAngles;
+        var rotation = transform.rotation;
+
+        var colliderRotation = _colliderTransform.localRotation;
+        var modelRotation = _modelTransform.localRotation;
+
+        if(_isSpeeding) { _turnSpeed = 200; }
+        else if(_isBacking) { _turnSpeed = 50; }
+        else { _turnSpeed = 0; }
+
+
+        if(Input.GetKey(KeyCode.LeftShift) && _isSpeeding) {
+            
+            if(!_isWheelieStarted) { WheelieTween(_wheelieAngle, modelRotation, colliderRotation, true); }
+
+            _forwardSpeed = _multipliedForwardSpeed;
+            _turnSpeed = 300f;
+        }
+        else if(Input.GetKeyUp(KeyCode.LeftShift)) {
+            
+            if(!_isWheelieStarted) { WheelieTween(0, modelRotation, colliderRotation, false); }
+
+            _forwardSpeed = 20f;
+            _turnSpeed = 200f;
+        }
+
+        if(Input.GetKeyDown(KeyCode.Space)) {
+            
+            if(!_isGrounded) { return; }
+
+            JumpTween();
+        }
+
+        if(Input.GetKeyUp(KeyCode.Space)) {
+            
+        }
+
+        if(steer > 0 && (_isSpeeding || _isBacking)) {
+            
+            if(_isSpeeding && !_isTiltStarted) {
+                
+                TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
+            }
+            else if(_isBacking && !_isTiltStarted) {
+                
+                TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
+            }
+
+            angles.y += steer * _turnSpeed * Time.deltaTime;
+            rotation.eulerAngles = angles;
+            transform.rotation = rotation;
+        }
+        else if(steer < 0 && (_isSpeeding || _isBacking)) {
+            
+            if(_isSpeeding && !_isTiltStarted) {
+                
+                TiltTween(_tiltAngle, modelRotation, colliderRotation, true);
+            }
+            else if(_isBacking && !_isTiltStarted) {
+                
+                TiltTween(-_tiltAngle, modelRotation, colliderRotation, true);
+            }
+            
+            angles.y += steer * _turnSpeed * Time.deltaTime;
+            rotation.eulerAngles = angles;
+            transform.rotation = rotation;
+        }
+        else {
+            
+            rotation.eulerAngles = new Vector3(0, transform.rotation.eulerAngles.y, 0);
+            transform.rotation = rotation;
+
+            var tweenInput = Vector3.zero;
+            TiltTween(tweenInput, tweenInput, false);
+        }
+    }
+    
 }
