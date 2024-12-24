@@ -14,10 +14,10 @@ public class PlayerMovement : MonoBehaviour {
     public Transform playerModel;
 
     [SerializeField] private float _forwardSpeed = 20f;
-    [SerializeField] private float _forwardSpeedFalloff = 5f;
+    // [SerializeField] private float _forwardSpeedFalloff = 5f;
     [SerializeField] private float _multipliedForwardSpeed = 35f;
     [SerializeField] private float _backwardSpeed = 5f;
-    [SerializeField] private float _brakeStrength = 10f;
+    // [SerializeField] private float _brakeStrength = 10f;
 
     [SerializeField] private float _tiltAngle = 15f;
     [SerializeField] private float _tiltTime = .25f;
@@ -39,7 +39,8 @@ public class PlayerMovement : MonoBehaviour {
     private bool _isWheelieStarted;
     private bool _isOnWheelie;
 
-    
+    private float _originalFwdSpeed;
+    private Vector3 _originalScale;
     
     private float _turnSpeed = 0;
 
@@ -53,13 +54,21 @@ public class PlayerMovement : MonoBehaviour {
     private Tweener _wheelieCollider;
 
     private Tweener _jumpTween;
+
+    private EventArchive _eventArchive;
     
     private void Awake() {
 
-        StartMovement();
+        _eventArchive = FindObjectOfType<EventArchive>();
+
+        _eventArchive.OnGameStart += StartMovement;
+
         
         _colliderTransform = playerCollider.transform;
         _modelTransform = playerModel.transform;
+
+        _originalScale = _modelTransform.localScale;
+        _originalFwdSpeed = _forwardSpeed;
     }
     
     private void StartMovement() {
@@ -67,9 +76,6 @@ public class PlayerMovement : MonoBehaviour {
         _isAvailable = true;
 
         _backwardSpeed *= -1;
-        
-        // StartCoroutine(InputCheck());
-        // StartCoroutine(MovementCheck());
         
     }
 
@@ -131,16 +137,16 @@ public class PlayerMovement : MonoBehaviour {
     }
 
     private void JumpTween() {
+        
+        _jumpTween = _modelTransform.DOScale(new Vector3(_originalScale.x * 1.25f, _originalScale.y * .75f, _originalScale.z * 1f), .15f).OnComplete(() => {
 
-        _jumpTween = _modelTransform.DOScale(new Vector3(1.25f, .75f, 1f), .15f).OnComplete(() => {
-
-            _modelTransform.DOScale(new Vector3(.75f, 1.25f, 1f), .25f);
-            transform.DOMoveY(10f, .25f).OnComplete(() => {
+            _modelTransform.DOScale(new Vector3(_originalScale.x * .75f, _originalScale.y * 1.25f, _originalScale.z * 1f), .25f);
+            transform.DOMoveY(4f, .25f).OnComplete(() => {
 
                 transform.DOMoveY(0, .25f);
-                _modelTransform.DOScale(Vector3.one, .25f)
-                    .OnComplete(() => _modelTransform.DOScale(new Vector3(1.25f, .75f, 1f), .15f)
-                        .OnComplete(() => _modelTransform.DOScale(Vector3.one, .15f)));
+                _modelTransform.DOScale(_originalScale, .25f)
+                    .OnComplete(() => _modelTransform.DOScale(new Vector3(_originalScale.x * 1.25f, _originalScale.y * .75f, _originalScale.z * 1f), .15f)
+                        .OnComplete(() => _modelTransform.DOScale(_originalScale, .15f)));
 
             });
         });
@@ -160,28 +166,7 @@ public class PlayerMovement : MonoBehaviour {
 
         _isGrounded = false;
     }
-
-    /*
-    private IEnumerator MovementCheck() {
-
-        while(_isAvailable) {
-            
-            if(Physics.Raycast(transform.position, -transform.up, .75f)) {
-                
-                // Debug.DrawRay(transform.position, -transform.up * .75f, Color.red);
-
-                _isGrounded = true;
-                
-                yield return new WaitForFixedUpdate();
-            }
-
-            _isGrounded = false;
-            
-            
-            yield return new WaitForFixedUpdate();
-        }
-    }
-    */
+    
     private void Update() {
         
         if(!_isAvailable) { return; }
@@ -223,12 +208,14 @@ public class PlayerMovement : MonoBehaviour {
             }
             case < 0: {
                 
+                /*
                 if(_currentSpeed > 0) {
                     
                     _currentSpeed -= _brakeStrength * Time.deltaTime;
                     transform.position += transform.forward * (verticalInput * _currentSpeed * Time.deltaTime);
                     break;
                 }
+                */
 
                 _currentSpeed = _backwardSpeed;
                 transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
@@ -237,13 +224,16 @@ public class PlayerMovement : MonoBehaviour {
 
             default: {
                 
+                /*
                 if(_currentSpeed > 0) {
                     
-                    _currentSpeed -= _forwardSpeedFalloff * Time.deltaTime;
+                    // _currentSpeed -= _forwardSpeedFalloff * Time.deltaTime;
+                    _currentSpeed = Mathf.MoveTowards(_currentSpeed, 0f, _forwardSpeedFalloff * Time.deltaTime);
                     Debug.Log($"slowing? {_currentSpeed}");
                     transform.position += transform.forward * (_currentSpeed * Time.deltaTime);
                     break;
                 }
+                */
 
                 _currentSpeed = 0;
                 break;
@@ -272,7 +262,7 @@ public class PlayerMovement : MonoBehaviour {
             
             if(!_isWheelieStarted) { WheelieTween(0, modelRotation, colliderRotation, false); }
 
-            _forwardSpeed = 20f;
+            _forwardSpeed = _originalFwdSpeed;
             _turnSpeed = 200f;
         }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,9 @@ using UnityEngine;
 public class ShowTarget : MonoBehaviour {
 
     private EventArchive _eventArchive;
-    
-    
-    void Start() {
+
+
+    private void Awake() {
 
         _eventArchive = FindObjectOfType<EventArchive>();
 

@@ -14,6 +14,9 @@ public class CheckpointHandler : MonoBehaviour {
 
     public GameObject PickupPoint;
     public GameObject DropoffPoint;
+
+    [SerializeField] private Transform _selectedStore;
+    [SerializeField] private Transform _selectedCustomer;
     
     
     private void Awake() {
@@ -52,6 +55,8 @@ public class CheckpointHandler : MonoBehaviour {
 
         var pickupTarget = stores[Random.Range(0, stores.Count)];
 
+        _selectedStore = pickupTarget;
+        
         PickupPoint.transform.position = new Vector3(pickupTarget.position.x, PickupPoint.transform.position.y, pickupTarget.position.z);
         PickupPoint.transform.rotation = pickupTarget.rotation;
         PickupPoint.SetActive(true);
@@ -67,7 +72,8 @@ public class CheckpointHandler : MonoBehaviour {
         DropoffPoint.transform.position = new Vector3(dropoffTarget.position.x, DropoffPoint.transform.position.y, dropoffTarget.position.z);
         DropoffPoint.transform.rotation = dropoffTarget.rotation;
         DropoffPoint.SetActive(true);
-        
+
+        _selectedCustomer = dropoffTarget;
         
         _eventArchive.InvokeOncheckpointChange(dropoffTarget);
     }
@@ -78,6 +84,8 @@ public class CheckpointHandler : MonoBehaviour {
         
         var pickupTarget = stores[Random.Range(0, stores.Count)];
 
+        _selectedStore = pickupTarget;
+        
         PickupPoint.transform.position = new Vector3(pickupTarget.position.x, PickupPoint.transform.position.y, pickupTarget.position.z);
         PickupPoint.transform.rotation = pickupTarget.rotation;
         PickupPoint.SetActive(true);
