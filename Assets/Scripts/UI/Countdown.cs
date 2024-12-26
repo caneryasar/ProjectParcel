@@ -18,9 +18,7 @@ public class Countdown : MonoBehaviour {
     private void OnEnable() {
 
         _eventArchive = FindObjectOfType<EventArchive>();
-
         _eventArchive.OnDeliveryDropoff += AddTime;
-        // _eventArchive.OnGameStart += StartCounter; 
         
         StartCounter();
     }
@@ -28,21 +26,10 @@ public class Countdown : MonoBehaviour {
     private void StartCounter() {
         
         _isAvaliable = true;
-        
         _remainingTime = startTime;
-        
     }
 
-    private void Start() {
-
-
-        // _isAvaliable = true;
-    }
-
-    private void AddTime() {
-
-        _remainingTime += addedTime;
-    }
+    private void AddTime() { _remainingTime += addedTime; }
 
     private void Update() {
 

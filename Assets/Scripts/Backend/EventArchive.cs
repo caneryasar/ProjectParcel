@@ -11,28 +11,9 @@ public class EventArchive : MonoBehaviour {
     public event Action OnGettingReadyToStart;
     
     
-    public void InvokeOnDeliveryPickup() {
-        
-        OnDeliveryPickup?.Invoke();
-    }
-
-    public void InvokeOnGameStart() {
-        
-        OnGameStart?.Invoke();
-    }
-
-    public void InvokeOnGettingReadyToStart() {
-        
-        OnGettingReadyToStart?.Invoke();
-    }
-
-    public void InvokeOnDeliveryDropoff() {
-        
-        OnDeliveryDropoff?.Invoke();
-    }
-
-    public void InvokeOncheckpointChange(Transform newPoint) {
-        
-        OnCheckpointChange?.Invoke(newPoint);
-    }
+    public void InvokeOnDeliveryPickup() { OnDeliveryPickup?.Invoke(); }
+    public void InvokeOnGameStart() { OnGameStart?.Invoke(); }
+    public void InvokeOnGettingReadyToStart() { OnGettingReadyToStart?.Invoke(); }
+    public void InvokeOnDeliveryDropoff() { OnDeliveryDropoff?.Invoke(); }
+    public void InvokeOncheckpointChange(Transform newPoint) { OnCheckpointChange?.Invoke(newPoint); }
 }

@@ -73,7 +73,7 @@ public class UIHandler : MonoBehaviour {
         StartCountdown();
     }
 
-    public void StartCountdown() {
+    private void StartCountdown() {
 
         var countdownText = countdown.GetComponentInChildren<TextMeshProUGUI>();
 

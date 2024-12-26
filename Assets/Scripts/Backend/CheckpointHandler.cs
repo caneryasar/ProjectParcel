@@ -30,15 +30,8 @@ public class CheckpointHandler : MonoBehaviour {
         var storeObjects = GameObject.FindGameObjectsWithTag("Store");
         var customerObjects = GameObject.FindGameObjectsWithTag("Customer");
         
-        foreach(var storeObject in storeObjects) {
-            
-            stores.Add(storeObject.transform.GetChild(0));
-        }
-        
-        foreach(var customerObject in customerObjects) {
-            
-            customers.Add(customerObject.transform.GetChild(0));
-        }
+        foreach(var storeObject in storeObjects) { stores.Add(storeObject.transform.GetChild(0)); }
+        foreach(var customerObject in customerObjects) { customers.Add(customerObject.transform.GetChild(0)); }
     }
 
     private void Start() {
@@ -54,7 +47,6 @@ public class CheckpointHandler : MonoBehaviour {
     private void StartCycle() {
 
         var pickupTarget = stores[Random.Range(0, stores.Count)];
-
         _selectedStore = pickupTarget;
         
         PickupPoint.transform.position = new Vector3(pickupTarget.position.x, PickupPoint.transform.position.y, pickupTarget.position.z);
@@ -69,11 +61,11 @@ public class CheckpointHandler : MonoBehaviour {
         PickupPoint.SetActive(false);
 
         var dropoffTarget = customers[Random.Range(0, customers.Count)];
+        _selectedCustomer = dropoffTarget;
+        
         DropoffPoint.transform.position = new Vector3(dropoffTarget.position.x, DropoffPoint.transform.position.y, dropoffTarget.position.z);
         DropoffPoint.transform.rotation = dropoffTarget.rotation;
         DropoffPoint.SetActive(true);
-
-        _selectedCustomer = dropoffTarget;
         
         _eventArchive.InvokeOncheckpointChange(dropoffTarget);
     }
@@ -83,7 +75,6 @@ public class CheckpointHandler : MonoBehaviour {
         DropoffPoint.SetActive(false);
         
         var pickupTarget = stores[Random.Range(0, stores.Count)];
-
         _selectedStore = pickupTarget;
         
         PickupPoint.transform.position = new Vector3(pickupTarget.position.x, PickupPoint.transform.position.y, pickupTarget.position.z);
