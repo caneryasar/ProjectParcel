@@ -12,6 +12,16 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Body
+    second: {fileID: 2100000, guid: 546a6590fc6b04541aa578921ad4d247, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Box
+    second: {fileID: 2100000, guid: 57fb00b250f746e4a812688b40e7c64d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: BrakeGlass
     second: {fileID: 2100000, guid: 2a006e523d8cbd54b99c147a23da83d2, type: 2}
   - first:
@@ -22,8 +32,63 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: FrontLight
+    second: {fileID: 2100000, guid: 1dcdb897319d9dc4791293bce0655426, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal
+    second: {fileID: 2100000, guid: c4ae25e3297aa894b99b09f26fe5012d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal2
+    second: {fileID: 2100000, guid: 2a006e523d8cbd54b99c147a23da83d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal3
+    second: {fileID: 2100000, guid: 3cfeba39e6870d94f968b4da3d305c32, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Metal4
+    second: {fileID: 2100000, guid: d6eaddaa5df8d784399bec88a3761517, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Pillow
+    second: {fileID: 2100000, guid: 11bb1802f4a86c2438dc752b427d8b97, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Plaka
+    second: {fileID: 2100000, guid: 3c23fccf86f905440af05a56e125392d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: RedLight
+    second: {fileID: 2100000, guid: 2ddfb2ad717dcde4caa1cd80fa0b5a5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: VespaMainMat
     second: {fileID: 2100000, guid: 546a6590fc6b04541aa578921ad4d247, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: VespaOutline
+    second: {fileID: 2100000, guid: f4960b05166a00e43b0d081fde925d79, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Wheel
+    second: {fileID: 2100000, guid: a08a2851068810b479bcbbf0fe739042, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Window
+    second: {fileID: 2100000, guid: f25ca351abb26344ba9479fdb3699a15, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
