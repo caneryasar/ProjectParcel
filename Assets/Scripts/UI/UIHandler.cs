@@ -12,8 +12,7 @@ public class UIHandler : MonoBehaviour {
     public GameObject mainMenu;
     public GameObject gameplay;
     public GameObject countdown;
-    public GameObject settings;
-    public GameObject customization;
+    public GameObject gameOver;
     
     //MainMenu Elements
     [Header("MainMenu Elements")] 
@@ -29,6 +28,11 @@ public class UIHandler : MonoBehaviour {
     public Transform _customizeEndPosition;
     public Transform _settingsEndPosition;
     public Transform _quitEndPosition;
+    
+    public Transform _gameOverTitleEndPosition;
+    public Transform _gameOverScoreEndPosition;
+    public Transform _gameOverRestartEndPosition;
+    public Transform _gameOverQuitEndPosition;
 
     private EventArchive _eventArchive;
     

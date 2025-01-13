@@ -24,6 +24,8 @@ public class CheckpointHandler : MonoBehaviour {
         PickupPoint.SetActive(false);
         DropoffPoint.SetActive(false);
         
+        _eventArchive = GetComponent<EventArchive>();
+        
         stores = new List<Transform>();
         customers = new List<Transform>();
         
@@ -35,8 +37,6 @@ public class CheckpointHandler : MonoBehaviour {
     }
 
     private void Start() {
-
-        _eventArchive = FindObjectOfType<EventArchive>();
         
         _eventArchive.OnDeliveryPickup += PickupComplete;
         _eventArchive.OnDeliveryDropoff += DropoffComplete;

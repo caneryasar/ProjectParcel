@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8285143412137332479}
   - component: {fileID: 7121838710925224795}
   - component: {fileID: 4034967629131423576}
+  - component: {fileID: 674418150467648217}
   m_Layer: 0
   m_Name: Main
   m_TagString: Untagged
@@ -63,6 +64,20 @@ MonoBehaviour:
   customers: []
   PickupPoint: {fileID: 8250378704865893396}
   DropoffPoint: {fileID: 8539857025823297815}
+  _selectedStore: {fileID: 0}
+  _selectedCustomer: {fileID: 0}
+--- !u!114 &674418150467648217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 166969934905280714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03afe7c8d6fdc7f4488d8dbdc5acc6ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &264343619794679083
 PrefabInstance:
   m_ObjectHideFlags: 0

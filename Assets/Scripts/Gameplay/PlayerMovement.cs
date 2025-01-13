@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.Splines;
 
 //todo: make movement with wheel collider at some point.
 //todo: initialize tweens then call tweens in a seperate functions. add a boolean to check if it has run before
@@ -18,20 +20,28 @@ public class PlayerMovement : MonoBehaviour {
     [SerializeField] private float _multipliedForwardSpeed = 35f;
     [SerializeField] private float _backwardSpeed = 5f;
     // [SerializeField] private float _brakeStrength = 10f;
-
+    [SerializeField] private float _jumpForce = 10f;
+    
     [SerializeField] private float _tiltAngle = 15f;
     [SerializeField] private float _tiltTime = .25f;
     [SerializeField] private float _wheelieAngle = -55f;
     [SerializeField] private float _wheelieTime = .25f;
 
     private float _currentSpeed;
+    private float _verticalVelocity;
     
-    private bool _isAvailable;
+    [SerializeField] private bool _isAvailable;
 
     private bool _isGrounded;
     
     private bool _isSpeeding;
     private bool _isBacking;
+
+    //todo: use isOnRails to prevent constant checking / use isSnapped to make the player position only snap once to rail / use isGrinding to make it snap out of the grind
+    
+    private bool _isOnRails;
+    private bool _isSnapped;
+    private bool _isGrinding;
 
     private bool _isTiltStarted;
     private bool _isOnTilt;
@@ -56,6 +66,8 @@ public class PlayerMovement : MonoBehaviour {
     private Tweener _jumpTween;
 
     private EventArchive _eventArchive;
+
+    private SplineAnimate _splineAnimate;
     
     private void Awake() {
 
@@ -69,6 +81,8 @@ public class PlayerMovement : MonoBehaviour {
 
         _originalScale = _modelTransform.localScale;
         _originalFwdSpeed = _forwardSpeed;
+
+        _splineAnimate = GetComponent<SplineAnimate>();
     }
     
     private void StartMovement() {
@@ -150,6 +164,7 @@ public class PlayerMovement : MonoBehaviour {
 
             });
         });
+        
     }
     
 
@@ -157,21 +172,61 @@ public class PlayerMovement : MonoBehaviour {
 
     private void FixedUpdate() {
         
+        Debug.DrawRay(transform.position, -transform.up * .75f, Color.red);
+        
         if(Physics.Raycast(transform.position, -transform.up, .75f)) {
 
             _isGrounded = true;
             
             return;
         }
+        
+        
+
+        if(Physics.SphereCast(transform.position, .5f, -transform.up, out var hit, .5f) && !_isGrinding) {
+            
+            if(hit.collider.CompareTag("Rail")) {
+
+                _isGrinding = true;
+
+                var railSpline = hit.transform.GetComponentInParent<SplineContainer>().Spline;
+
+                var playerPosition = new float3(transform.position.x, transform.position.y, transform.position.z);
+
+                var pointOnSpline = SplineUtility.GetNearestPoint(railSpline, playerPosition, out var nearestWorld, out var narestSpline);
+
+                transform.position = nearestWorld;
+                
+                
+                return;
+
+                // railSpline.Spline.Knots
+            }
+        }
+        
+        _isGrinding = false;
+        
+        _verticalVelocity = -9.81f * Time.deltaTime * 7.5f;
 
         _isGrounded = false;
     }
-    
+
+    private void OnDrawGizmos() {
+
+        if(_isGrinding) {
+            
+            Debug.DrawRay(transform.position, -transform.up, Color.green);
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(-transform.up, .5f);
+        }
+    }
+
     private void Update() {
         
         if(!_isAvailable) { return; }
 
-        if(!_isGrounded) { return; }
+        // if(!_isGrounded) { return; }
 
         var verticalInput = Input.GetAxis("Vertical");
         var steer = Input.GetAxis("Horizontal");
@@ -270,12 +325,18 @@ public class PlayerMovement : MonoBehaviour {
             
             if(!_isGrounded) { return; }
 
-            JumpTween();
+            // JumpTween();
+
+            _verticalVelocity = _jumpForce;
         }
 
         if(Input.GetKeyUp(KeyCode.Space)) {
             
         }
+
+        var designedPosition = new Vector3(0, _verticalVelocity, 0);
+
+        transform.Translate(designedPosition * Time.deltaTime);
 
         if(steer > 0 && (_isSpeeding || _isBacking)) {
             
