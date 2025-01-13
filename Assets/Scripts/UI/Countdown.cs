@@ -33,11 +33,18 @@ public class Countdown : MonoBehaviour {
 
     private void Update() {
 
-        if(!_isAvaliable) { return; }       
+        if(!_isAvaliable) { return; }
+
+        if(_remainingTime <= 0) {
+
+            _remainingTime = 0;
+
+            _eventArchive.InvokeOnGameOver();
+            
+            return;
+        }
         
         _remainingTime -= Time.deltaTime;
-
-        if(_remainingTime <= 0) { _remainingTime = 0; }
         
         var minutes = Mathf.FloorToInt(_remainingTime / 60f);
         var seconds = Mathf.FloorToInt(_remainingTime % 60f);

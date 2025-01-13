@@ -4,10 +4,13 @@ using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIHandler : MonoBehaviour {
+
+    public float currentScore;
 
     [Header("Panels")]
     public GameObject mainMenu;
@@ -41,6 +44,10 @@ public class UIHandler : MonoBehaviour {
     [FormerlySerializedAs("_gameOverRestartEndPosition")] public Transform gameOverRestartEndPosition;
     [FormerlySerializedAs("_gameOverQuitEndPosition")] public Transform gameOverQuitEndPosition;
 
+    
+    [Header("Gameplay Elements")] 
+    public TextMeshProUGUI scoreText;
+    
     private EventArchive _eventArchive;
     
     
@@ -64,6 +71,8 @@ public class UIHandler : MonoBehaviour {
         settingsButton.interactable = false;
         quitButton.interactable = false;
 
+        scoreText.text = $"{currentScore}$";
+
         title.transform.DOMove(titleEndPosition.position, .25f, true).OnComplete(() => {
 
             playButton.transform.DOMove(playEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
@@ -71,7 +80,12 @@ public class UIHandler : MonoBehaviour {
             settingsButton.transform.DOMove(settingsEndPosition.position, .45f, true);
             quitButton.transform.DOMove(quitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
         });
-        
+
+        _eventArchive.OnDeliveryDropoff += () => {
+            
+            currentScore += 100;
+            scoreText.text = $"{currentScore}$";
+        };
     }
 
     public void StartButton() {
@@ -79,6 +93,7 @@ public class UIHandler : MonoBehaviour {
         mainMenu.SetActive(false);
         gameplay.SetActive(false);
         countdown.SetActive(true);
+        gameOver.SetActive(false);
 
         _eventArchive.InvokeOnGettingReadyToStart();
         
@@ -122,15 +137,29 @@ public class UIHandler : MonoBehaviour {
     }
 
     private void GameOver() {
+        
+        mainMenu.SetActive(false);
+        gameplay.SetActive(false);
+        countdown.SetActive(false);
+        gameOver.SetActive(true);
+        
+        score.GetComponent<TextMeshProUGUI>().text = $"MONEY EARNED: {currentScore}$";
 
-       
-
-        replayButton.transform.DOMove(gameOverRestartEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
         score.transform.DOMove(gameOverScoreEndPosition.position, .35f, true);
         endtitle.transform.DOMove(gameOverTitleEndPosition.position, .45f, true);
+        replayButton.transform.DOMove(gameOverRestartEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
         quitEndPosition.transform.DOMove(gameOverQuitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
         
+    }
+
+    public void Replay() {
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void Quit() {
         
+        Application.Quit();
     }
 
 

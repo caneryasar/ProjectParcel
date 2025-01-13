@@ -7,6 +7,10 @@ public class PlayerController : MonoBehaviour {
 
     public Transform model;
     public Transform collider;
+
+    public ParticleSystem smoke;
+
+    public MeshRenderer mesh;
     
     public float maxSpeed;
     public float acceleration;
@@ -43,12 +47,13 @@ public class PlayerController : MonoBehaviour {
         _eventArchive.OnJumpInput += j => _inputJump = j;
         _eventArchive.OnWheelieInput += w => _inputWheelie = w;
         _eventArchive.OnGameStart += () => _isPlayable = true;
+        _eventArchive.OnGameOver += () => _isPlayable = false;
     }
 
     // Start is called before the first frame update
     void Start() {
         
-        
+        smoke.Play();
     }
 
     // Update is called once per frame
@@ -60,15 +65,23 @@ public class PlayerController : MonoBehaviour {
         
         _isGrounded = Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, .1f, LayerMask.GetMask("Ground"));
         
-        Debug.Log($"jump: {_inputJump} / grounded: {_isGrounded}");
-
+        // Debug.Log($"jump: {_inputJump} / grounded: {_isGrounded}");
+        var smokeEmission = smoke.emission;
+        mesh.materials[4].DisableKeyword("_EMISSION");
+        
+        
         if(_inputMove.y > 0) {
 
             _currentSpeed += acceleration * Time.deltaTime;
+
+            smokeEmission.rateOverTime = 16;
         }
         else if(_inputMove.y < 0) {
 
             _currentSpeed -= deceleration * Time.deltaTime;
+            
+            
+            mesh.materials[4].EnableKeyword("_EMISSION");
         }
         else {
 
@@ -85,6 +98,8 @@ public class PlayerController : MonoBehaviour {
                 if(_currentSpeed > 0) { _currentSpeed = 0f; }
             }
         }
+        
+        smokeEmission.rateOverTime = 4;
 
         if(_inputWheelie) {
             
