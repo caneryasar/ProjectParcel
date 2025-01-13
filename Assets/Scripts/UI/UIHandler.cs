@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class UIHandler : MonoBehaviour {
@@ -23,16 +24,22 @@ public class UIHandler : MonoBehaviour {
     public Button quitButton;
     
     //Positions;
-    public Transform _titleEndPosition;
-    public Transform _playEndPosition;
-    public Transform _customizeEndPosition;
-    public Transform _settingsEndPosition;
-    public Transform _quitEndPosition;
+    [FormerlySerializedAs("_titleEndPosition")] public Transform titleEndPosition;
+    [FormerlySerializedAs("_playEndPosition")] public Transform playEndPosition;
+    [FormerlySerializedAs("_customizeEndPosition")] public Transform customizeEndPosition;
+    [FormerlySerializedAs("_settingsEndPosition")] public Transform settingsEndPosition;
+    [FormerlySerializedAs("_quitEndPosition")] public Transform quitEndPosition;
     
-    public Transform _gameOverTitleEndPosition;
-    public Transform _gameOverScoreEndPosition;
-    public Transform _gameOverRestartEndPosition;
-    public Transform _gameOverQuitEndPosition;
+    [Header("GameOver Elements")] 
+    public GameObject endtitle;
+    public GameObject score;
+    public Button replayButton;
+    public Button endquitButton;
+    
+    [FormerlySerializedAs("_gameOverTitleEndPosition")] public Transform gameOverTitleEndPosition;
+    [FormerlySerializedAs("_gameOverScoreEndPosition")] public Transform gameOverScoreEndPosition;
+    [FormerlySerializedAs("_gameOverRestartEndPosition")] public Transform gameOverRestartEndPosition;
+    [FormerlySerializedAs("_gameOverQuitEndPosition")] public Transform gameOverQuitEndPosition;
 
     private EventArchive _eventArchive;
     
@@ -42,6 +49,7 @@ public class UIHandler : MonoBehaviour {
         mainMenu.SetActive(true);
         gameplay.SetActive(false);
         countdown.SetActive(false);
+        gameOver.SetActive(false);
         // settings?.SetActive(false);
         // customization?.SetActive(false);
 
@@ -56,12 +64,12 @@ public class UIHandler : MonoBehaviour {
         settingsButton.interactable = false;
         quitButton.interactable = false;
 
-        title.transform.DOMove(_titleEndPosition.position, .25f, true).OnComplete(() => {
+        title.transform.DOMove(titleEndPosition.position, .25f, true).OnComplete(() => {
 
-            playButton.transform.DOMove(_playEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
-            customizeButton.transform.DOMove(_customizeEndPosition.position, .35f, true);
-            settingsButton.transform.DOMove(_settingsEndPosition.position, .45f, true);
-            quitButton.transform.DOMove(_quitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
+            playButton.transform.DOMove(playEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
+            customizeButton.transform.DOMove(customizeEndPosition.position, .35f, true);
+            settingsButton.transform.DOMove(settingsEndPosition.position, .45f, true);
+            quitButton.transform.DOMove(quitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
         });
         
     }
@@ -111,6 +119,18 @@ public class UIHandler : MonoBehaviour {
                 });
             });
         });
+    }
+
+    private void GameOver() {
+
+       
+
+        replayButton.transform.DOMove(gameOverRestartEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
+        score.transform.DOMove(gameOverScoreEndPosition.position, .35f, true);
+        endtitle.transform.DOMove(gameOverTitleEndPosition.position, .45f, true);
+        quitEndPosition.transform.DOMove(gameOverQuitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
+        
+        
     }
 
 
