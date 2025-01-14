@@ -19,6 +19,7 @@ public class Countdown : MonoBehaviour {
 
         _eventArchive = FindObjectOfType<EventArchive>();
         _eventArchive.OnDeliveryDropoff += AddTime;
+        _eventArchive.OnGameOver += () => _isAvaliable = false;
         
         StartCounter();
     }
@@ -38,6 +39,8 @@ public class Countdown : MonoBehaviour {
         if(_remainingTime <= 0) {
 
             _remainingTime = 0;
+            
+            countdownDigits.text = "00:00";
 
             _eventArchive.InvokeOnGameOver();
             

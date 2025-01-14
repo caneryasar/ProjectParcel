@@ -23,12 +23,16 @@ public class EventArchive : MonoBehaviour {
     public event Action OnGameStart;
     public event Action OnGameOver;
     public event Action OnGettingReadyToStart;
+    public event Action OnCountDown;
+    public event Action OnGo;
     
     
     public void InvokeOnDeliveryPickup() { OnDeliveryPickup?.Invoke(); }
     public void InvokeOnGameStart() { OnGameStart?.Invoke(); }
     
     public void InvokeOnGameOver() { OnGameOver?.Invoke(); }
+    public void InvokeOnCountDown() { OnCountDown?.Invoke(); }
+    public void InvokeOnGo() { OnGo?.Invoke(); }
     public void InvokeOnGettingReadyToStart() { OnGettingReadyToStart?.Invoke(); }
     public void InvokeOnDeliveryDropoff() { OnDeliveryDropoff?.Invoke(); }
     public void InvokeOncheckpointChange(Transform newPoint) { OnCheckpointChange?.Invoke(newPoint); }

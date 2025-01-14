@@ -2,14 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerController : MonoBehaviour {
 
+    public GameObject frogSit;
+    public GameObject frogPose;
+    
+    
     public Transform model;
-    public Transform collider;
+    [FormerlySerializedAs("collider")] public Transform modelCollider;
+    public Transform handlebar;
+    public Transform frontGuard;
+    public Transform frontWheel;
+    public Transform rearWheel;
 
     public ParticleSystem smoke;
-
     public MeshRenderer mesh;
     
     public float maxSpeed;
@@ -24,7 +32,15 @@ public class PlayerController : MonoBehaviour {
     private float _defaultacceleration;
     private float _defaultdeceleration;
 
+    private Quaternion _defaultHandleRotation;
+    private Quaternion _defaultGuardRotation;
+
+    private float _wheelRotationFactor = 100f;
+
     private float _verticalVelocity;
+
+    private float _handleBarRotataion = 15f;
+    private float _wheelRotation;
 
     private EventArchive _eventArchive;
 
@@ -39,19 +55,44 @@ public class PlayerController : MonoBehaviour {
 
     private readonly float Gravity = -9.81f;
 
+    private ShowTarget _direction;
+
     private void Awake() {
+        
+        frogPose.SetActive(false);
 
         _eventArchive = FindObjectOfType<EventArchive>();
 
         _eventArchive.OnMoveInput += v2 => _inputMove = v2;
         _eventArchive.OnJumpInput += j => _inputJump = j;
         _eventArchive.OnWheelieInput += w => _inputWheelie = w;
-        _eventArchive.OnGameStart += () => _isPlayable = true;
+        _eventArchive.OnGameStart += () => {
+            
+            _direction.gameObject.SetActive(true);
+            _isPlayable = true;
+        };
         _eventArchive.OnGameOver += () => _isPlayable = false;
+        _eventArchive.OnDeliveryPickup += () => {
+            
+            frogSit.SetActive(false);
+            frogPose.SetActive(true);
+        };
+        _eventArchive.OnDeliveryDropoff += () => {
+            
+            frogSit.SetActive(true);
+            frogPose.SetActive(false);
+        };
+
+        _direction = GetComponentInChildren<ShowTarget>();
     }
 
     // Start is called before the first frame update
     void Start() {
+        
+        _direction.gameObject.SetActive(false);
+
+        _defaultHandleRotation = handlebar.localRotation;
+        _defaultGuardRotation = frontGuard.localRotation;
         
         smoke.Play();
     }
@@ -61,12 +102,10 @@ public class PlayerController : MonoBehaviour {
 
         if(!_isPlayable) { return; }
         
-        // Debug.DrawRay(transform.position, Vector3.down * .1f, Color.red);
-        
         _isGrounded = Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, .1f, LayerMask.GetMask("Ground"));
         
-        // Debug.Log($"jump: {_inputJump} / grounded: {_isGrounded}");
-        var smokeEmission = smoke.emission;
+        
+        var emissionModule  = smoke.emission;
         mesh.materials[4].DisableKeyword("_EMISSION");
         
         
@@ -74,14 +113,13 @@ public class PlayerController : MonoBehaviour {
 
             _currentSpeed += acceleration * Time.deltaTime;
 
-            smokeEmission.rateOverTime = 16;
+            emissionModule.rateOverTime = new ParticleSystem.MinMaxCurve(16f);
         }
         else if(_inputMove.y < 0) {
-
-            _currentSpeed -= deceleration * Time.deltaTime;
-            
             
             mesh.materials[4].EnableKeyword("_EMISSION");
+
+            _currentSpeed -= deceleration * Time.deltaTime;
         }
         else {
 
@@ -97,13 +135,19 @@ public class PlayerController : MonoBehaviour {
 
                 if(_currentSpeed > 0) { _currentSpeed = 0f; }
             }
+            
+            emissionModule.rateOverTime = new ParticleSystem.MinMaxCurve(4f);
         }
         
-        smokeEmission.rateOverTime = 4;
+
 
         if(_inputWheelie) {
+
+            var currentAngle = model.localEulerAngles.x;
             
-            var wheelieAngle = Mathf.Clamp(_inputMove.x * 15f, 0f, -25f);
+            var wheelieAngle = Mathf.Clamp(currentAngle, 0f, -25f);
+
+            wheelieAngle = Mathf.LerpAngle(currentAngle, wheelieAngle, 100f * Time.deltaTime);
 
             var modelEuler = model.localRotation.eulerAngles;
             var modelEulerTarget = new Vector3(wheelieAngle, modelEuler.y, modelEuler.z);
@@ -116,7 +160,7 @@ public class PlayerController : MonoBehaviour {
             var colliderEulerTarget = new Vector3(wheelieAngle, colliderEuler.y, colliderEuler.z);
             var colliderRotation = Quaternion.Euler(colliderEulerTarget);
         
-            collider.localRotation = Quaternion.Slerp(collider.localRotation, colliderRotation,  wheelieAngle * Time.deltaTime);
+            modelCollider.localRotation = Quaternion.Slerp(modelCollider.localRotation, colliderRotation,  wheelieAngle * Time.deltaTime);
             
         }
 
@@ -137,10 +181,38 @@ public class PlayerController : MonoBehaviour {
             
         }
         */
+
+        if(_inputMove.x != 0) {
+
+            var targetAngle = Mathf.Lerp(-_handleBarRotataion, _handleBarRotataion, (_inputMove.x + 1f) * 0.5f);
+            
+            
+            var handleEuler = handlebar.localEulerAngles;
+            handleEuler.y = Mathf.LerpAngle(handleEuler.y, targetAngle, Time.deltaTime * turnSpeed);
+            handlebar.localRotation = Quaternion.Euler(handleEuler);
+            
+            var guardEuler = frontGuard.localEulerAngles;
+            guardEuler.y = Mathf.LerpAngle(guardEuler.y, targetAngle, Time.deltaTime * turnSpeed);
+            frontGuard.localRotation = Quaternion.Euler(guardEuler);
+        }
+        else {
+
+            handlebar.localRotation = _defaultHandleRotation;
+            frontGuard.localRotation = _defaultGuardRotation;
+        }
         
         _currentSpeed = Mathf.Clamp(_currentSpeed, -maxSpeed * .05f, maxSpeed);
         
         transform.Translate(Vector3.forward * (_currentSpeed * Time.deltaTime) + Vector3.up * (_verticalVelocity * Time.deltaTime));
+        
+        _wheelRotation *= _currentSpeed * Time.deltaTime;
+
+        var direction = Mathf.Sign(_currentSpeed);
+        var rotationSpeed = Mathf.Abs(_currentSpeed) * _wheelRotationFactor;
+        var rotationThisFrame = rotationSpeed * Time.deltaTime;
+        
+        frontWheel.Rotate(Vector3.up, rotationThisFrame * direction * -1f);
+        rearWheel.Rotate(Vector3.up, rotationThisFrame * direction * -1f);
 
         if(_currentSpeed != 0) {
             
@@ -163,7 +235,7 @@ public class PlayerController : MonoBehaviour {
             var colliderEulerTarget = new Vector3(colliderEuler.x, colliderEuler.y, leanAngle);
             var colliderRotation = Quaternion.Euler(colliderEulerTarget);
         
-            collider.localRotation = Quaternion.Slerp(collider.localRotation, colliderRotation,  leanTime * Time.deltaTime);
+            modelCollider.localRotation = Quaternion.Slerp(modelCollider.localRotation, colliderRotation,  leanTime * Time.deltaTime);
         }
         
     }

@@ -5,8 +5,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class InputHandler : MonoBehaviour {
-    
-    //todo: make a better easier to use movement mechanic
 
     private EventArchive _eventArchive;
 
@@ -19,10 +17,8 @@ public class InputHandler : MonoBehaviour {
     private void Awake() {
 
         _eventArchive = GetComponent<EventArchive>();
-
     }
 
-    // Start is called before the first frame update
     void Start() {
 
         _eventArchive.OnGameStart += () => _isPlayable = true;
@@ -32,15 +28,12 @@ public class InputHandler : MonoBehaviour {
         _jump = InputSystem.actions.FindAction("Jump");
     }
 
-    // Update is called once per frame
     void Update() {
+
+        if(!_isPlayable) { return; }
         
         _eventArchive.InvokeOnMoveInput(_move.ReadValue<Vector2>());
         _eventArchive.InvokeOnWheelieInput(_sprint.IsPressed());
         _eventArchive.InvokeOnJumpInput(_jump.triggered);
-        
-        
-        
-        
     }
 }

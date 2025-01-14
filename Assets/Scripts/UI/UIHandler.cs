@@ -36,6 +36,8 @@ public class UIHandler : MonoBehaviour {
     [Header("GameOver Elements")] 
     public GameObject endtitle;
     public GameObject score;
+    public TextMeshProUGUI pickup;
+    public TextMeshProUGUI dropoff;
     public Button replayButton;
     public Button endquitButton;
     
@@ -81,11 +83,36 @@ public class UIHandler : MonoBehaviour {
             quitButton.transform.DOMove(quitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
         });
 
+        _eventArchive.OnDeliveryPickup += () => {
+            
+            pickup.transform.localScale = Vector3.zero;
+            pickup.gameObject.SetActive(true);
+            pickup.transform.DOScale(Vector3.one, 1f).OnComplete(() =>
+                DOVirtual.DelayedCall(.5f, () =>
+                    pickup.DOFade(0, .5f).OnComplete(() => {
+
+                        pickup.gameObject.SetActive(false);
+                        pickup.alpha = 1f;
+                    })));
+        };
+        
         _eventArchive.OnDeliveryDropoff += () => {
+            
+            dropoff.transform.localScale = Vector3.zero;
+            dropoff.gameObject.SetActive(true);
+            dropoff.transform.DOScale(Vector3.one, 1f).OnComplete(() =>
+                DOVirtual.DelayedCall(.5f, () =>
+                    pickup.DOFade(0, .5f).OnComplete(() => {
+
+                        dropoff.gameObject.SetActive(false);
+                        dropoff.alpha = 1f;
+                    })));
             
             currentScore += 100;
             scoreText.text = $"{currentScore}$";
         };
+
+        _eventArchive.OnGameOver += GameOver;
     }
 
     public void StartButton() {
@@ -104,6 +131,8 @@ public class UIHandler : MonoBehaviour {
 
         var countdownText = countdown.GetComponentInChildren<TextMeshProUGUI>();
 
+        _eventArchive.InvokeOnCountDown();
+        
         countdownText.text = "3";
 
         countdownText.DOFade(0, 1).OnComplete(() => {
@@ -111,6 +140,7 @@ public class UIHandler : MonoBehaviour {
             countdownText.alpha = 100;
             countdownText.text = "2";
             countdownText.color = Color.yellow;
+            _eventArchive.InvokeOnCountDown();
 
             countdownText.DOFade(0, 1).OnComplete(() => {
 
@@ -118,6 +148,7 @@ public class UIHandler : MonoBehaviour {
                 countdownText.alpha = 100;
                 countdownText.text = "1";
                 countdownText.color = Color.red;
+                _eventArchive.InvokeOnCountDown();
                 
                 
                 countdownText.DOFade(0, 1).OnComplete(() => {
@@ -126,11 +157,16 @@ public class UIHandler : MonoBehaviour {
                     countdownText.alpha = 100;
                     countdownText.text = "GO!";
                     countdownText.color = Color.green;
-                }).OnComplete(() => {
-                    
-                    _eventArchive.InvokeOnGameStart();
-                    gameplay.SetActive(true);
-                    countdown.SetActive(false);
+                    _eventArchive.InvokeOnGo();
+
+                    countdownText.DOFade(0, 1);
+                        
+                    DOVirtual.DelayedCall(1f, () => {
+                            
+                        _eventArchive.InvokeOnGameStart();
+                        gameplay.SetActive(true);
+                        countdown.SetActive(false);
+                    });
                 });
             });
         });
@@ -147,8 +183,8 @@ public class UIHandler : MonoBehaviour {
 
         score.transform.DOMove(gameOverScoreEndPosition.position, .35f, true);
         endtitle.transform.DOMove(gameOverTitleEndPosition.position, .45f, true);
-        replayButton.transform.DOMove(gameOverRestartEndPosition.position, .25f, true).OnComplete(() => playButton.interactable = true);
-        quitEndPosition.transform.DOMove(gameOverQuitEndPosition.position, .55f, true).OnComplete(() => quitButton.interactable = true);
+        replayButton.transform.DOMove(gameOverRestartEndPosition.position, .25f, true).OnComplete(() => replayButton.interactable = true);
+        endquitButton.transform.DOMove(gameOverQuitEndPosition.position, .55f, true).OnComplete(() => endquitButton.interactable = true);
         
     }
 
