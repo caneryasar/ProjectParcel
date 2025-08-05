@@ -1,6 +1,6 @@
 # 🛵 Go-Go Delivery
 
-**Go-Go Delivery** is a lighthearted, time-based 3D delivery game where the player takes control of a scooter-riding frog and races against the clock to pick up and deliver packages around a stylized city. The game was developed as part of a university lecture project by Caner Yaşar (programming) and Gamze Nur Gürbüzer (3D art & modeling).
+**Go-Go Delivery** is a lighthearted, time-based 3D delivery game where the player takes control of a scooter-riding frog and races against the clock to pick up and deliver packages around a stylized city. The game was developed as part of a university lecture project.
 
 ---
 
