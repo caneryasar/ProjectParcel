@@ -9,7 +9,6 @@
 - You begin at a random spot on the map.
 - A pick-up and drop-off location is assigned.
 - Complete the delivery before time runs out to earn points and bonus time.
-- Perform tricks and jumps using ramps and terrain to earn score multipliers.(TBD)
 - The game continues until the countdown ends.
 
 ---
@@ -18,8 +17,6 @@
 
 - 🏍️ **Scooter Driving**: Smooth and responsive control using a custom movement system.
 - ⏱️ **Time-Based Loop**: Complete as many deliveries as possible before the timer ends.
-- 💫 **Acrobatics Bonus (Future Work)**: Earn extra points for jumps and stunts.
-- 💾 **Customization (Future Work)**: Plans to let players use points to customize their character and scooter.
 - 🎨 **Cozy Visual Style**: Toon-shaded 3D models and soft pastel tones for a relaxing arcade feel.
 - 🐸 **Character Design**: The player character is a cheerful frog riding a Vespa-style scooter.
 
